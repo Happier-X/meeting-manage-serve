@@ -1,4 +1,4 @@
-import { IsNotEmpty, MaxLength, MinLength } from 'class-validator';
+import { MaxLength, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @MinLength(6)
@@ -8,4 +8,8 @@ export class RegisterDto {
   @MinLength(8)
   @MaxLength(20)
   public readonly password: string;
+
+  @MinLength(8)
+  @MaxLength(20)
+  public readonly confirmPassword: string;
 }
