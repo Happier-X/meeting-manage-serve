@@ -18,18 +18,38 @@ export class UserService {
   }
 
   findAll() {
-    return `This action returns all user`;
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        role: true,
+      },
+    });
   }
 
   findOne(id: number) {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const updateData: any = {
+      username: updateUserDto.username,
+      role: updateUserDto.role,
+    };
+
+    if (updateUserDto.password) {
+      updateData.password = await argon2.hash(updateUserDto.password);
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data: updateData,
+    });
   }
 
   remove(id: number) {
-    return `This action removes a #${id} user`;
+    return this.prisma.user.delete({
+      where: { id },
+    });
   }
 }
