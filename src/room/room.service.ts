@@ -21,9 +21,11 @@ export class RoomService {
     return this.prisma.room.findMany({});
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} room`;
-  }
+  // findOne(id: number) {
+  //   return this.prisma.room.findUnique({
+  //     where: { id },
+  //   });
+  // }
 
   update(id: number, updateRoomDto: UpdateRoomDto) {
     return this.prisma.room.update({
@@ -40,6 +42,14 @@ export class RoomService {
   remove(id: number) {
     return this.prisma.room.delete({
       where: { id },
+    });
+  }
+
+  findAvailableRooms() {
+    return this.prisma.room.findMany({
+      where: {
+        status: 'available',
+      },
     });
   }
 }
