@@ -19,3 +19,25 @@ model User {
   password  String
   role      String?
 }
+
+model Room {
+  id         Int      @id @default(autoincrement())
+  name       String
+  capacity   Int
+  location   String
+  status     String
+  devices    Device[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Device {
+  id         Int      @id @default(autoincrement())
+  name       String
+  type       String
+  status     String
+  room       Room     @relation(fields: [roomId], references: [id])
+  roomId     Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

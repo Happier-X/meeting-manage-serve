@@ -1,15 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class RoomService {
+  constructor(private readonly prisma: PrismaService) {}
   create(createRoomDto: CreateRoomDto) {
-    return 'This action adds a new room';
+    return this.prisma.room.create({
+      data: {
+        name: createRoomDto.name,
+        capacity: createRoomDto.capacity,
+        location: createRoomDto.location,
+        status: createRoomDto.status,
+      },
+    });
   }
 
   findAll() {
-    return `This action returns all room`;
+    return this.prisma.room.findMany({});
   }
 
   findOne(id: number) {
@@ -17,10 +26,20 @@ export class RoomService {
   }
 
   update(id: number, updateRoomDto: UpdateRoomDto) {
-    return `This action updates a #${id} room`;
+    return this.prisma.room.update({
+      where: { id },
+      data: {
+        name: updateRoomDto.name,
+        capacity: updateRoomDto.capacity,
+        location: updateRoomDto.location,
+        status: updateRoomDto.status,
+      },
+    });
   }
 
   remove(id: number) {
-    return `This action removes a #${id} room`;
+    return this.prisma.room.delete({
+      where: { id },
+    });
   }
 }
