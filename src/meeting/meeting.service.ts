@@ -1,15 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class MeetingService {
+  constructor(private readonly prisma: PrismaService) {}
   create(createMeetingDto: CreateMeetingDto) {
-    return 'This action adds a new meeting';
+    return this.prisma.meeting.create({
+      data: {
+        name: createMeetingDto.name,
+        roomId: createMeetingDto.roomId,
+        startTime: new Date(createMeetingDto.startTime),
+        endTime: new Date(createMeetingDto.endTime),
+      },
+    });
   }
 
   findAll() {
-    return `This action returns all meeting`;
+    return this.prisma.meeting.findMany({
+      include: {
+        room: true,
+      },
+    });
   }
 
   findOne(id: number) {
@@ -17,10 +30,20 @@ export class MeetingService {
   }
 
   update(id: number, updateMeetingDto: UpdateMeetingDto) {
-    return `This action updates a #${id} meeting`;
+    return this.prisma.meeting.update({
+      where: { id },
+      data: {
+        name: updateMeetingDto.name,
+        roomId: updateMeetingDto.roomId,
+        startTime: new Date(updateMeetingDto.startTime),
+        endTime: new Date(updateMeetingDto.endTime),
+      },
+    });
   }
 
   remove(id: number) {
-    return `This action removes a #${id} meeting`;
+    return this.prisma.meeting.delete({
+      where: { id },
+    });
   }
 }
