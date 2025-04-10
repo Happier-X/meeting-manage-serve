@@ -25,7 +25,8 @@ model Room {
   name       String
   capacity   Int
   location   String
-  status     String
+  /// @computed 根据关联会议的时间计算得出
+  status     String?   @default("available")
   devices    Device[]
   meetings   Meeting[]
   createdAt  DateTime  @default(now())
@@ -35,7 +36,6 @@ model Room {
 model Device {
   id         Int      @id @default(autoincrement())
   name       String
-  type       String
   status     String
   room       Room     @relation(fields: [roomId], references: [id])
   roomId     Int

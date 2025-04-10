@@ -14,6 +14,6 @@ export class CreateRoomDto {
   location: string;
 
   @IsString()
-  @IsNotEmpty()
+  // @IsNotEmpty()
   status: string;
 }

@@ -6,50 +6,79 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class RoomService {
   constructor(private readonly prisma: PrismaService) {}
-  create(createRoomDto: CreateRoomDto) {
-    return this.prisma.room.create({
+
+  private async calculateRoomStatus(roomId: number): Promise<string> {
+    const now = new Date();
+    const meeting = await this.prisma.meeting.findFirst({
+      where: {
+        roomId: roomId,
+        startTime: { lte: now },
+        endTime: { gte: now },
+      },
+    });
+    return meeting ? 'occupied' : 'available';
+  }
+
+  async create(createRoomDto: CreateRoomDto) {
+    const room = await this.prisma.room.create({
       data: {
         name: createRoomDto.name,
         capacity: createRoomDto.capacity,
         location: createRoomDto.location,
-        status: createRoomDto.status,
       },
     });
+    const status = await this.calculateRoomStatus(room.id);
+    return { ...room, status };
   }
 
-  findAll() {
-    return this.prisma.room.findMany({});
+  async findAll() {
+    const rooms = await this.prisma.room.findMany({
+      include: {
+        meetings: true,
+      },
+    });
+
+    return Promise.all(
+      rooms.map(async (room) => {
+        const status = await this.calculateRoomStatus(room.id);
+        return { ...room, status };
+      }),
+    );
   }
 
-  // findOne(id: number) {
-  //   return this.prisma.room.findUnique({
-  //     where: { id },
-  //   });
-  // }
+  async findOne(id: number) {
+    const room = await this.prisma.room.findUnique({
+      where: { id },
+      include: {
+        meetings: true,
+      },
+    });
+    if (!room) return null;
+    const status = await this.calculateRoomStatus(room.id);
+    return { ...room, status };
+  }
 
-  update(id: number, updateRoomDto: UpdateRoomDto) {
-    return this.prisma.room.update({
+  async update(id: number, updateRoomDto: UpdateRoomDto) {
+    const room = await this.prisma.room.update({
       where: { id },
       data: {
         name: updateRoomDto.name,
         capacity: updateRoomDto.capacity,
         location: updateRoomDto.location,
-        status: updateRoomDto.status,
       },
     });
+    const status = await this.calculateRoomStatus(room.id);
+    return { ...room, status };
   }
 
-  remove(id: number) {
+  async remove(id: number) {
     return this.prisma.room.delete({
       where: { id },
     });
   }
 
-  findAvailableRooms() {
-    return this.prisma.room.findMany({
-      where: {
-        status: 'available',
-      },
-    });
+  async findAvailableRooms() {
+    const rooms = await this.findAll();
+    return rooms.filter((room) => room.status === 'available');
   }
 }

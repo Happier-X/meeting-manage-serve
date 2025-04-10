@@ -18,6 +18,6 @@ export class UpdateRoomDto {
 
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
+  // @IsNotEmpty()
   status?: string;
 }
