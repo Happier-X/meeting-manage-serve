@@ -3,7 +3,7 @@ import { MeetingService } from './meeting.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { UpdateMeetingDto } from './dto/update-meeting.dto';
 
-@Controller('meeting')
+@Controller('meetings')
 export class MeetingController {
   constructor(private readonly meetingService: MeetingService) {}
 
