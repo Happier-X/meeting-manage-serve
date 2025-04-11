@@ -17,10 +17,10 @@ export class MeetingController {
     return this.meetingService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.meetingService.findOne(+id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.meetingService.findOne(+id);
+  // }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateMeetingDto: UpdateMeetingDto) {
@@ -30,5 +30,10 @@ export class MeetingController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.meetingService.remove(+id);
+  }
+
+  @Get('/statistics')
+  getStatistics() {
+    return this.meetingService.getStatistics();
   }
 }

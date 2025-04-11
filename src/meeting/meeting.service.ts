@@ -296,4 +296,60 @@ export class MeetingService {
       meetings,
     };
   }
+
+  async getStatistics(startDate?: string, endDate?: string) {
+    // 如果没有提供日期范围，默认取最近7天
+    const start = startDate
+      ? new Date(startDate)
+      : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const end = endDate ? new Date(endDate) : new Date();
+
+    // 查询指定日期范围内的会议
+    const meetings = await this.prisma.meeting.findMany({
+      where: {
+        startTime: {
+          gte: start,
+          lte: end,
+        },
+      },
+      select: {
+        startTime: true,
+      },
+    });
+
+    // 创建日期映射，用于统计每天的会议数量
+    const dateCountMap = new Map<string, number>();
+
+    // 初始化日期范围内的所有日期计数为0
+    const currentDate = new Date(start);
+    while (currentDate <= end) {
+      const dateStr = currentDate.toISOString().split('T')[0]; // 格式: YYYY-MM-DD
+      dateCountMap.set(dateStr, 0);
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // 统计每天的会议数量
+    meetings.forEach((meeting) => {
+      const dateStr = meeting.startTime.toISOString().split('T')[0];
+      const count = dateCountMap.get(dateStr) || 0;
+      dateCountMap.set(dateStr, count + 1);
+    });
+
+    // 将Map转换为排序后的日期和计数数组
+    const dates: string[] = [];
+    const counts: number[] = [];
+
+    // 按日期排序
+    Array.from(dateCountMap.entries())
+      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+      .forEach(([date, count]) => {
+        dates.push(date);
+        counts.push(count);
+      });
+
+    return {
+      dates,
+      counts,
+    };
+  }
 }
