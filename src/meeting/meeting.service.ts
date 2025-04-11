@@ -7,12 +7,26 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class MeetingService {
   constructor(private readonly prisma: PrismaService) {}
   create(createMeetingDto: CreateMeetingDto) {
+    const data: any = {
+      name: createMeetingDto.name,
+      roomId: createMeetingDto.roomId,
+      startTime: new Date(createMeetingDto.startTime),
+      endTime: new Date(createMeetingDto.endTime),
+    };
+
+    if (createMeetingDto.userIds && createMeetingDto.userIds.length > 0) {
+      data.users = {
+        create: createMeetingDto.userIds.map((userId) => ({
+          userId: userId,
+        })),
+      };
+    }
+
     return this.prisma.meeting.create({
-      data: {
-        name: createMeetingDto.name,
-        roomId: createMeetingDto.roomId,
-        startTime: new Date(createMeetingDto.startTime),
-        endTime: new Date(createMeetingDto.endTime),
+      data,
+      include: {
+        users: true,
+        room: true,
       },
     });
   }
@@ -21,22 +35,44 @@ export class MeetingService {
     return this.prisma.meeting.findMany({
       include: {
         room: true,
+        users: true,
       },
     });
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} meeting`;
+    return this.prisma.meeting.findUnique({
+      where: { id },
+      include: {
+        room: true,
+        users: true,
+      },
+    });
   }
 
   update(id: number, updateMeetingDto: UpdateMeetingDto) {
+    const data: any = {
+      name: updateMeetingDto.name,
+      roomId: updateMeetingDto.roomId,
+      startTime: new Date(updateMeetingDto.startTime),
+      endTime: new Date(updateMeetingDto.endTime),
+    };
+
+    if (updateMeetingDto.userIds) {
+      data.users = {
+        deleteMany: {},
+        create: updateMeetingDto.userIds.map((userId) => ({
+          userId: userId,
+        })),
+      };
+    }
+
     return this.prisma.meeting.update({
       where: { id },
-      data: {
-        name: updateMeetingDto.name,
-        roomId: updateMeetingDto.roomId,
-        startTime: new Date(updateMeetingDto.startTime),
-        endTime: new Date(updateMeetingDto.endTime),
+      data,
+      include: {
+        room: true,
+        users: true,
       },
     });
   }

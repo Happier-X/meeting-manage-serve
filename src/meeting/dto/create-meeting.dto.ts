@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsDateString, IsNumber } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsDateString,
+  IsNumber,
+  IsArray,
+} from 'class-validator';
 
 export class CreateMeetingDto {
   @IsString()
@@ -16,4 +22,9 @@ export class CreateMeetingDto {
   @IsDateString()
   @IsNotEmpty()
   endTime: string;
+
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @IsNotEmpty()
+  userIds: number[]; // 添加参会人ID数组
 }

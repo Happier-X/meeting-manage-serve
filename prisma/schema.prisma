@@ -17,18 +17,21 @@ model User {
   id        Int      @id @default(autoincrement())
   username  String   @unique
   password  String
-  role      String?
+  role      String?  // 用户角色，如管理员、普通用户等
+  meetings  MeetingParticipant[] // 用户参与的会议
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Room {
   id         Int       @id @default(autoincrement())
-  name       String
-  capacity   Int
-  location   String
+  name       String    // 会议室名称
+  capacity   Int       // 会议室容量
+  location   String    // 会议室位置
   /// @computed 根据关联会议的时间计算得出
-  status     String?   @default("available")
-  devices    Device[]
-  meetings   Meeting[]
+  status     String?   @default("available") // 会议室状态：available, occupied, maintenance
+  devices    Device[]  // 会议室包含的设备
+  meetings   Meeting[] // 在该会议室举行的会议
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 }
@@ -44,13 +47,24 @@ model Device {
 }
 
 model Meeting {
-  id          Int      @id @default(autoincrement())
-  name        String
-  roomId      Int
-  room        Room     @relation(fields: [roomId], references: [id])
-  startTime   DateTime
-  endTime     DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         Int                  @id @default(autoincrement())
+  name       String
+  roomId     Int
+  room       Room                @relation(fields: [roomId], references: [id])
+  users      MeetingParticipant[] 
+  startTime  DateTime
+  endTime    DateTime
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+}
+
+model MeetingParticipant {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  meeting   Meeting  @relation(fields: [meetingId], references: [id])
+  meetingId Int
+  createdAt DateTime @default(now())
+  @@unique([userId, meetingId])
 }
 
