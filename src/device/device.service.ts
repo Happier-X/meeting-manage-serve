@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class DeviceService {
@@ -10,16 +11,39 @@ export class DeviceService {
   async create(createDeviceDto: CreateDeviceDto) {
     return await this.prisma.device.create({
       data: createDeviceDto,
+      include: {
+        room: true, // 包含会议室信息
+      },
     });
   }
 
-  async findAll() {
-    return await this.prisma.device.findMany();
+  async findAll(params?: {
+    skip?: number;
+    take?: number;
+    cursor?: Prisma.DeviceWhereUniqueInput;
+    where?: Prisma.DeviceWhereInput;
+    orderBy?: Prisma.DeviceOrderByWithRelationInput;
+  }) {
+    const { skip, take, cursor, where, orderBy } = params || {};
+
+    return await this.prisma.device.findMany({
+      skip,
+      take,
+      cursor,
+      where,
+      orderBy,
+      include: {
+        room: true, // 包含会议室信息
+      },
+    });
   }
 
   async findOne(id: number) {
     return await this.prisma.device.findUnique({
       where: { id },
+      include: {
+        room: true, // 包含会议室信息
+      },
     });
   }
 
@@ -27,12 +51,57 @@ export class DeviceService {
     return await this.prisma.device.update({
       where: { id },
       data: updateDeviceDto,
+      include: {
+        room: true, // 包含会议室信息
+      },
     });
   }
 
   async remove(id: number) {
     return await this.prisma.device.delete({
       where: { id },
+      include: {
+        room: true, // 包含会议室信息
+      },
     });
+  }
+
+  // 根据会议室ID查询设备
+  async findByRoomId(roomId: number) {
+    return await this.prisma.device.findMany({
+      where: { roomId },
+      include: {
+        room: true,
+      },
+    });
+  }
+
+  // 批量更新设备状态
+  async updateManyStatus(ids: number[], status: string) {
+    return await this.prisma.device.updateMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+      data: {
+        status,
+      },
+    });
+  }
+
+  // 统计设备状态
+  async countByStatus() {
+    const devices = await this.prisma.device.groupBy({
+      by: ['status'],
+      _count: {
+        status: true,
+      },
+    });
+
+    return devices.map((item) => ({
+      status: item.status,
+      count: item._count.status,
+    }));
   }
 }

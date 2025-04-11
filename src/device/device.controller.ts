@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { DeviceService } from './device.service';
 import { CreateDeviceDto } from './dto/create-device.dto';
 import { UpdateDeviceDto } from './dto/update-device.dto';
+import { QueryDeviceDto } from './dto/query-device.dto';
 
 @Controller('device')
 export class DeviceController {
@@ -13,13 +23,38 @@ export class DeviceController {
   }
 
   @Get()
-  findAll() {
-    return this.deviceService.findAll();
+  findAll(@Query() query: QueryDeviceDto) {
+    const { skip, take, name, status, roomId } = query;
+    const where = {};
+
+    if (name) {
+      where['name'] = { contains: name };
+    }
+
+    if (status) {
+      where['status'] = status;
+    }
+
+    if (roomId) {
+      where['roomId'] = roomId;
+    }
+
+    return this.deviceService.findAll({
+      skip,
+      take,
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.deviceService.findOne(+id);
+  }
+
+  @Get('room/:roomId')
+  findByRoom(@Param('roomId') roomId: string) {
+    return this.deviceService.findByRoomId(+roomId);
   }
 
   @Patch(':id')
@@ -30,5 +65,15 @@ export class DeviceController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.deviceService.remove(+id);
+  }
+
+  @Post('batch-status')
+  updateStatus(@Body() data: { ids: number[]; status: string }) {
+    return this.deviceService.updateManyStatus(data.ids, data.status);
+  }
+
+  @Get('stats/count-by-status')
+  getStatusStats() {
+    return this.deviceService.countByStatus();
   }
 }

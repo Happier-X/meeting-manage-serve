@@ -25,6 +25,7 @@ export class RoomService {
         name: createRoomDto.name,
         capacity: createRoomDto.capacity,
         location: createRoomDto.location,
+        status: 'available',
       },
     });
     const status = await this.calculateRoomStatus(room.id);
@@ -35,6 +36,7 @@ export class RoomService {
     const rooms = await this.prisma.room.findMany({
       include: {
         meetings: true,
+        devices: true,
       },
     });
 
@@ -51,6 +53,7 @@ export class RoomService {
       where: { id },
       include: {
         meetings: true,
+        devices: true,
       },
     });
     if (!room) return null;
@@ -65,6 +68,7 @@ export class RoomService {
         name: updateRoomDto.name,
         capacity: updateRoomDto.capacity,
         location: updateRoomDto.location,
+        ...(updateRoomDto.status && { status: updateRoomDto.status }),
       },
     });
     const status = await this.calculateRoomStatus(room.id);
@@ -72,6 +76,18 @@ export class RoomService {
   }
 
   async remove(id: number) {
+    const meetingsCount = await this.prisma.meeting.count({
+      where: { roomId: id },
+    });
+
+    if (meetingsCount > 0) {
+      throw new Error('无法删除会议室：此会议室仍有关联的会议记录');
+    }
+
+    await this.prisma.device.deleteMany({
+      where: { roomId: id },
+    });
+
     return this.prisma.room.delete({
       where: { id },
     });
@@ -80,5 +96,37 @@ export class RoomService {
   async findAvailableRooms() {
     const rooms = await this.findAll();
     return rooms.filter((room) => room.status === 'available');
+  }
+
+  async setRoomMaintenance(id: number, inMaintenance: boolean) {
+    return this.prisma.room.update({
+      where: { id },
+      data: {
+        status: inMaintenance ? 'maintenance' : 'available',
+      },
+    });
+  }
+
+  async searchRooms(keyword: string, minCapacity?: number) {
+    const rooms = await this.prisma.room.findMany({
+      where: {
+        OR: [
+          { name: { contains: keyword } },
+          { location: { contains: keyword } },
+        ],
+        ...(minCapacity && { capacity: { gte: minCapacity } }),
+      },
+      include: {
+        meetings: true,
+        devices: true,
+      },
+    });
+
+    return Promise.all(
+      rooms.map(async (room) => {
+        const status = await this.calculateRoomStatus(room.id);
+        return { ...room, status };
+      }),
+    );
   }
 }
