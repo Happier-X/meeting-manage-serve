@@ -1,17 +1,6 @@
-import { IsOptional, IsString, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString } from 'class-validator';
 
 export class QueryUserDto {
-  @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  skip?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Type(() => Number)
-  take?: number;
-
   @IsOptional()
   @IsString()
   username?: string;

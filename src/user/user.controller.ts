@@ -34,7 +34,7 @@ export class UserController {
 
   @Get()
   async findAll(@Query() query: QueryUserDto) {
-    const { skip, take, username, role, sortBy, sortOrder } = query;
+    const { username, role, sortBy, sortOrder } = query;
 
     const where = {};
     if (username) {
@@ -51,23 +51,13 @@ export class UserController {
       orderBy['createdAt'] = 'desc';
     }
 
-    const [users, total] = await Promise.all([
-      this.userService.findAll({
-        skip: skip ? Number(skip) : undefined,
-        take: take ? Number(take) : undefined,
-        where,
-        orderBy,
-      }),
-      this.userService.countUsers(where),
-    ]);
+    const users = await this.userService.findAll({
+      where,
+      orderBy,
+    });
 
     return {
       data: users,
-      meta: {
-        total,
-        page: skip ? Math.floor(skip / (take || 10)) + 1 : 1,
-        pageSize: take || 10,
-      },
     };
   }
 

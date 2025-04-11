@@ -24,7 +24,7 @@ export class DeviceController {
 
   @Get()
   findAll(@Query() query: QueryDeviceDto) {
-    const { skip, take, name, status, roomId } = query;
+    const { name, status, roomId } = query;
     const where = {};
 
     if (name) {
@@ -40,8 +40,6 @@ export class DeviceController {
     }
 
     return this.deviceService.findAll({
-      skip,
-      take,
       where,
       orderBy: { createdAt: 'desc' },
     });
