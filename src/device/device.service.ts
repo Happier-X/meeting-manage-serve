@@ -92,16 +92,24 @@ export class DeviceService {
 
   // 统计设备状态
   async countByStatus() {
-    const devices = await this.prisma.device.groupBy({
-      by: ['status'],
-      _count: {
-        status: true,
-      },
+    // 获取所有设备
+    const devices = await this.prisma.device.findMany();
+
+    // 初始化计数对象
+    const statusCount = {
+      normal: 0,
+      fault: 0,
+    };
+
+    // 统计不同状态的设备数量
+    devices.forEach((device) => {
+      if (device.status === 'normal') {
+        statusCount.normal++;
+      } else if (device.status === 'fault') {
+        statusCount.fault++;
+      }
     });
 
-    return devices.map((item) => ({
-      status: item.status,
-      count: item._count.status,
-    }));
+    return statusCount;
   }
 }

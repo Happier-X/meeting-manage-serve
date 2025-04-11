@@ -71,7 +71,8 @@ export class DeviceController {
   }
 
   @Get('stats/count-by-status')
-  getStatusStats() {
-    return this.deviceService.countByStatus();
+  async getStatusStats() {
+    const statusCounts = await this.deviceService.countByStatus();
+    return { status: statusCounts };
   }
 }
