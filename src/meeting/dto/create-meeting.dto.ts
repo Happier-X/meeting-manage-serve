@@ -1,9 +1,9 @@
 import {
-  IsString,
-  IsNotEmpty,
-  IsDateString,
-  IsNumber,
   IsArray,
+  IsDateString,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
 } from 'class-validator';
 
 export class CreateMeetingDto {
@@ -25,6 +25,5 @@ export class CreateMeetingDto {
 
   @IsArray()
   @IsNumber({}, { each: true })
-  @IsNotEmpty()
-  userIds: number[]; // 添加参会人ID数组
+  userIds: number[];
 }

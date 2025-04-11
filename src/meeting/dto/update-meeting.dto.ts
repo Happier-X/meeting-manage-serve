@@ -1,19 +1,32 @@
-import { IsString, IsNotEmpty, IsDateString, IsNumber } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateMeetingDto } from './create-meeting.dto';
+import {
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsDateString,
+} from 'class-validator';
 
-export class UpdateMeetingDto {
+export class UpdateMeetingDto extends PartialType(CreateMeetingDto) {
   @IsString()
-  @IsNotEmpty()
-  name: string;
+  @IsOptional()
+  name?: string;
 
   @IsNumber()
-  @IsNotEmpty()
-  roomId: number;
+  @IsOptional()
+  roomId?: number;
 
   @IsDateString()
-  @IsNotEmpty()
-  startTime: string;
+  @IsOptional()
+  startTime?: string;
 
   @IsDateString()
-  @IsNotEmpty()
-  endTime: string;
+  @IsOptional()
+  endTime?: string;
+
+  @IsArray()
+  @IsNumber({}, { each: true })
+  @IsOptional()
+  userIds?: number[];
 }
