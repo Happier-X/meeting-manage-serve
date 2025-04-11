@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -76,21 +76,39 @@ export class RoomService {
   }
 
   async remove(id: number) {
-    const meetingsCount = await this.prisma.meeting.count({
-      where: { roomId: id },
-    });
+    try {
+      // 开始事务，确保操作的原子性
+      return await this.prisma.$transaction(async (prisma) => {
+        // 1. 删除与会议室关联的所有会议的参与者记录
+        await prisma.meetingParticipant.deleteMany({
+          where: {
+            meeting: {
+              roomId: id,
+            },
+          },
+        });
 
-    if (meetingsCount > 0) {
-      throw new Error('无法删除会议室：此会议室仍有关联的会议记录');
+        // 2. 删除与会议室关联的所有会议
+        await prisma.meeting.deleteMany({
+          where: { roomId: id },
+        });
+
+        // 3. 删除与会议室关联的所有设备
+        await prisma.device.deleteMany({
+          where: { roomId: id },
+        });
+
+        // 4. 最后删除会议室本身
+        return prisma.room.delete({
+          where: { id },
+        });
+      });
+    } catch (error) {
+      throw new HttpException(
+        `删除会议室失败: ${error instanceof Error ? error.message : String(error)}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    await this.prisma.device.deleteMany({
-      where: { roomId: id },
-    });
-
-    return this.prisma.room.delete({
-      where: { id },
-    });
   }
 
   async findAvailableRooms() {
