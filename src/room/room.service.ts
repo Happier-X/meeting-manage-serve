@@ -147,4 +147,29 @@ export class RoomService {
       }),
     );
   }
+
+  async getRoomUsage() {
+    // 获取所有会议室
+    const rooms = await this.findAll();
+
+    // 计算已使用和空闲的会议室数量
+    const totalRooms = rooms.length;
+    const occupiedRooms = rooms.filter(
+      (room) => room.status === 'occupied' || room.status === 'maintenance',
+    ).length;
+    const availableRooms = totalRooms - occupiedRooms;
+
+    // 计算百分比，如果没有会议室则都为0
+    const usedPercentage =
+      totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
+    const freePercentage =
+      totalRooms > 0 ? Math.round((availableRooms / totalRooms) * 100) : 0;
+
+    return {
+      overallUsage: {
+        used: usedPercentage,
+        free: freePercentage,
+      },
+    };
+  }
 }

@@ -44,4 +44,9 @@ export class RoomController {
   findAvailableRooms() {
     return this.roomService.findAvailableRooms();
   }
+
+  @Get('usage')
+  getRoomUsage() {
+    return this.roomService.getRoomUsage();
+  }
 }
