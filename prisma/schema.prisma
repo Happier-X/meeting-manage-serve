@@ -54,6 +54,7 @@ model Meeting {
   users      MeetingParticipant[] 
   startTime  DateTime
   endTime    DateTime
+  records    MeetingRecord[]     // 会议相关的记录
   createdAt  DateTime            @default(now())
   updatedAt  DateTime            @updatedAt
 }
@@ -66,5 +67,16 @@ model MeetingParticipant {
   meetingId Int
   createdAt DateTime @default(now())
   @@unique([userId, meetingId])
+}
+
+model MeetingRecord {
+  id          Int      @id @default(autoincrement())
+  meeting     Meeting  @relation(fields: [meetingId], references: [id])
+  meetingId   Int
+  content     String   @db.Text     // 会议记录内容
+  recorderId  Int                   // 记录人ID
+  attachments String?  @db.Text     // 附件路径，可以存储JSON字符串
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 

@@ -9,6 +9,7 @@ import { RoomModule } from './room/room.module';
 import { DeviceModule } from './device/device.module';
 import { JwtAuthGuard } from './auth/guard/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { RecordModule } from './record/record.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { APP_GUARD } from '@nestjs/core';
     MeetingModule,
     RoomModule,
     DeviceModule,
+    RecordModule,
   ],
   controllers: [AppController],
   providers: [
