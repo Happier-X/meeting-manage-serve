@@ -54,6 +54,8 @@ model Meeting {
   users      MeetingParticipant[] 
   startTime  DateTime
   endTime    DateTime
+  status     String              @default("pending") // 会议审核状态：pending, approved, rejected
+  statusReason String?           // 审核理由，尤其是拒绝时的原因说明
   records    MeetingRecord[]     // 会议相关的记录
   createdAt  DateTime            @default(now())
   updatedAt  DateTime            @updatedAt
